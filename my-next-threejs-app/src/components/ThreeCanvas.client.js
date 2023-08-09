@@ -1,6 +1,8 @@
 import React, { useRef, useEffect } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { DragControls } from "three/examples/jsm/controls/DragControls";
+
 import styles from "./ThreeCanvas.module.css";
 
 export default function ThreeCanvas() {
@@ -22,6 +24,14 @@ export default function ThreeCanvas() {
     camera.position.z = 5;
 
     const controls = new OrbitControls(camera, renderer.domElement);
+
+    const dragControls = new DragControls(
+      objectsRef.current,
+      camera,
+      renderer.domElement
+    );
+
+    // dragControls.addEventListener("drag", render);
 
     const animate = () => {
       requestAnimationFrame(animate);
@@ -45,14 +55,18 @@ export default function ThreeCanvas() {
 
     const material = new THREE.MeshBasicMaterial({ color: 0x00fff0 });
     const shape = new THREE.Mesh(geometry, material);
+    const group = new THREE.Group();
+    group.add(shape);
 
     const lastObject = objectsRef.current[objectsRef.current.length - 1];
     if (lastObject) {
-      shape.position.x = lastObject.position.x + 2;
+      lastObject.add(group);
+      group.position.x += 2;
+    } else {
+      sceneRef.current.add(group);
     }
 
-    sceneRef.current.add(shape);
-    objectsRef.current.push(shape);
+    objectsRef.current.push(group);
   };
 
   return (
